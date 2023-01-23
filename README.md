@@ -29,3 +29,15 @@ You, the unlucky prisoner, will have to evade monstrosities lurking within the m
 - Stamina
 - A simple room with walls
 - Collision Detection
+
+
+# Commit Diary (Descending Order)
+## b2
+- Add player to the game
+- Add keyboard control for player
+- Add movement to player
+- Add rotation to player
+
+
+## b1
+- Add Myra for the purposes of UI and menus

@@ -4,16 +4,26 @@ using Microsoft.Xna.Framework.Input;
 
 using Myra;
 using Myra.Graphics2D.UI;
-
-
+using System;
 
 namespace Maze_Crawler
 {
     public class Core : Game
     {
-        private Desktop _desktop;
         private GraphicsDeviceManager _graphicsDevice;
         private SpriteBatch _spriteBatch;
+
+
+
+        // Player
+        Texture2D playerTexture;
+        string playerTextureName;
+        private Vector2 playerPosition;
+        private int playerRectangleSize;
+        private int playerSpriteSheetCellX;
+        private int playerSpriteSheetCellY;
+        private float  playerRotation;
+        private float playerSpeed;
 
         public Core()
         {   Content.RootDirectory = "Content";
@@ -24,80 +34,54 @@ namespace Maze_Crawler
 
         protected override void Initialize()
         {
+            // Player Init
+            playerTextureName = "7Soul1_prisoner_player";
+            playerPosition = new Vector2(200, 200);
+            playerRectangleSize =  48;
+            playerSpriteSheetCellX = 0;
+            playerSpriteSheetCellY = 0;
+            playerRotation = 0f;
+            playerSpeed = 1f;
+
+            // Player Load texture
+            playerTexture = Content.Load<Texture2D>(playerTextureName);
+
             base.Initialize();
         }
 
         protected override void LoadContent()
         {
             _spriteBatch = new SpriteBatch(GraphicsDevice);
-            MyraEnvironment.Game = this;
-
-            var grid = new Grid
-            {
-                RowSpacing = 8,
-                ColumnSpacing = 8
-            };
-
-            grid.ColumnsProportions.Add(new Proportion(ProportionType.Auto));
-            grid.ColumnsProportions.Add(new Proportion(ProportionType.Auto));
-            grid.RowsProportions.Add(new Proportion(ProportionType.Auto));
-            grid.RowsProportions.Add(new Proportion(ProportionType.Auto));
-
-            var helloWorld = new Label
-            {
-                Id = "label",
-                Text = "Hello, World!"
-            };
-            grid.Widgets.Add(helloWorld);
-
-            // ComboBox
-            var combo = new ComboBox
-            {
-                GridColumn = 1,
-                GridRow = 0
-            };
-
-            combo.Items.Add(new ListItem("Red", Color.Red));
-            combo.Items.Add(new ListItem("Green", Color.Green));
-            combo.Items.Add(new ListItem("Blue", Color.Blue));
-            grid.Widgets.Add(combo);
-
-            // Button
-            var button = new TextButton
-            {
-                GridColumn = 0,
-                GridRow = 1,
-                Text = "Show"
-            };
-
-            button.Click += (s, a) =>
-            {
-                var messageBox = Dialog.CreateMessageBox("Message", "Some message!");
-                messageBox.ShowModal(_desktop);
-            };
-
-            grid.Widgets.Add(button);
-
-            // Spin button
-            var spinButton = new SpinButton
-            {
-                GridColumn = 1,
-                GridRow = 1,
-                Width = 100,
-                Nullable = true
-            };
-            grid.Widgets.Add(spinButton);
-
-            // Add it to the desktop
-            _desktop = new Desktop();
-            _desktop.Root = grid;
-
         }
 
         protected override void Update(GameTime gameTime)
         {
+            KeyboardState currKeyboarState = Keyboard.GetState();
+
             if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
                 Exit(); 
+
+            if (currKeyboarState.IsKeyDown(Keys.A))
+            {
+                playerRotation -= ((float)Math.PI)/60;
+            }
+            if (currKeyboarState.IsKeyDown(Keys.D))
+            {
+                playerRotation += ((float)Math.PI) / 60;
+            }
+
+            if (currKeyboarState.IsKeyDown(Keys.W))
+            {
+                playerPosition.X -= (float)(Math.Sin(playerRotation)) * playerSpeed;
+                playerPosition.Y += (float)(Math.Cos(playerRotation)) * playerSpeed;
+            }
+
+            if (currKeyboarState.IsKeyDown(Keys.S))
+            {
+                playerPosition.X += (float)(Math.Sin(playerRotation)) * (playerSpeed/2);
+                playerPosition.Y -= (float)(Math.Cos(playerRotation)) * (playerSpeed/2);
+            }
+
 
             base.Update(gameTime);
         }
@@ -105,7 +89,24 @@ namespace Maze_Crawler
         protected override void Draw(GameTime gameTime)
         {
             GraphicsDevice.Clear(Color.CornflowerBlue);
-            _desktop.Render();
+
+
+            _spriteBatch.Begin();
+
+            _spriteBatch.Draw(
+                playerTexture, 
+                playerPosition, 
+                new Rectangle(playerSpriteSheetCellX * playerRectangleSize, playerSpriteSheetCellY * playerRectangleSize, playerRectangleSize, playerRectangleSize), 
+                Color.White,
+                playerRotation,
+                new Vector2(playerRectangleSize/2, playerRectangleSize/2),
+                1.1f,
+                SpriteEffects.None,
+                1);
+
+            _spriteBatch.End();
+
+
             base.Draw(gameTime);
         }
     }

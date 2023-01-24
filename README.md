@@ -32,6 +32,13 @@ You, the unlucky prisoner, will have to evade monstrosities lurking within the m
 
 
 # Commit Diary (Descending Order)
+## b3
+- Add gamepad control for player
+- Add mouse look for player
+- Add side movement for player (focused on mouse position)
+- Add an internal toggle for input type so that mouse position will not interfere with gamepad.
+
+
 ## b2
 - Add player to the game
 - Add keyboard control for player

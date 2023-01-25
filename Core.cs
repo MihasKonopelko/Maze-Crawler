@@ -29,6 +29,8 @@ namespace Maze_Crawler
         private int playerSpriteSheetCellY;
         private float  playerRotation;
         private float playerSpeed;
+        private bool playerMouseAimMode;
+        private bool playerGamepadAimMode;
 
         public Core()
         {   Content.RootDirectory = "Content";
@@ -49,7 +51,9 @@ namespace Maze_Crawler
             playerSpriteSheetCellX = 0;
             playerSpriteSheetCellY = 0;
             playerRotation = 0f;
-            playerSpeed = 1f;
+            playerSpeed = 3f;
+            playerMouseAimMode = false;
+            playerGamepadAimMode = false;
 
             // Player Load texture
             playerTexture = Content.Load<Texture2D>(playerTextureName);
@@ -73,27 +77,86 @@ namespace Maze_Crawler
             if (currGamePadState.Buttons.Back == ButtonState.Pressed)
                 Exit();
 
-            // Thumbstic movement
-            if (Math.Abs(currGamePadState.ThumbSticks.Left.X) > 0.01f || Math.Abs(currGamePadState.ThumbSticks.Left.Y) > 0.01f)
+            // Right Thumb Stick Looking
+            if (Math.Abs(currGamePadState.ThumbSticks.Right.X) > 0.01f || Math.Abs(currGamePadState.ThumbSticks.Right.Y) > 0.01f)
             {
-                playerPosition.X += (float)(currGamePadState.ThumbSticks.Left.X) * playerSpeed;
-                playerPosition.Y -= (float)(currGamePadState.ThumbSticks.Left.Y) * playerSpeed;
+                playerRotation = (float)Math.Atan2(
+                       -((float)(currGamePadState.ThumbSticks.Right.X)),
+                       -((float)(currGamePadState.ThumbSticks.Right.Y))
+                   );
+                playerGamepadAimMode = true;
+            }
+            else 
+            { 
+                playerGamepadAimMode = false; 
+            }
 
-                float targetRotation = (float)Math.Atan2(-currGamePadState.ThumbSticks.Left.X, -currGamePadState.ThumbSticks.Left.Y);
-                playerRotation = targetRotation;
+
+            // Left Thumb Stick Movement
+            if (Math.Abs(currGamePadState.ThumbSticks.Left.X) > 0.01f || Math.Abs(currGamePadState.ThumbSticks.Left.Y) > 0.01f)
+            {   
+                if (playerGamepadAimMode == false) 
+                { 
+                    float targetRotation = (float)Math.Atan2(-currGamePadState.ThumbSticks.Left.X, -currGamePadState.ThumbSticks.Left.Y);
+                    playerRotation = targetRotation;
+
+                    playerPosition.X += (float)(currGamePadState.ThumbSticks.Left.X) * playerSpeed;
+                    playerPosition.Y -= (float)(currGamePadState.ThumbSticks.Left.Y) * playerSpeed;
+                }
+                else
+                {
+                    // Modify speed based on movement and look directions
+
+                    double angleLTS = (Math.Atan2(currGamePadState.ThumbSticks.Left.X, currGamePadState.ThumbSticks.Left.Y));
+                    double angleRTS = (Math.Atan2(currGamePadState.ThumbSticks.Right.X, currGamePadState.ThumbSticks.Right.Y));
+                    double difference = angleLTS - angleRTS;
+
+
+                    if (Math.Abs(difference) < Math.PI * .5)
+                    {
+                        playerPosition.X += (float)(currGamePadState.ThumbSticks.Left.X) * playerSpeed;
+                        playerPosition.Y -= (float)(currGamePadState.ThumbSticks.Left.Y) * playerSpeed;
+                    }
+
+                    else if (Math.Abs(difference) >= Math.PI * .5)
+                    {
+                        playerPosition.X += (float)(currGamePadState.ThumbSticks.Left.X) * playerSpeed / 2;
+                        playerPosition.Y -= (float)(currGamePadState.ThumbSticks.Left.Y) * playerSpeed/2;
+                    }
+
+                }
 
                 currentInputSource = ActiveInputSource.Controller;
             }
+
+
 
             // Keyboard Control
             // Exit Game
             if (Keyboard.GetState().IsKeyDown(Keys.Escape))
                 Exit();
 
+            // Aim mode (keyboard)
+            if (currMouseState.RightButton == ButtonState.Pressed)
+            {
+                playerMouseAimMode = true;
+            }
+            else if (currMouseState.RightButton == ButtonState.Released)
+            {
+                playerMouseAimMode = false;
+            }
+
+
             // Mouse Look and PC rotation
             if (currentInputSource == ActiveInputSource.Keyboard)
-            {               
-                playerRotation = (float)Math.Atan2(-(currMouseState.X - playerPosition.X), (currMouseState.Y - playerPosition.Y));
+            {             
+                if (playerMouseAimMode == true) 
+                { 
+                    playerRotation = (float)Math.Atan2(
+                        -(currMouseState.X - playerPosition.X), 
+                        (currMouseState.Y - playerPosition.Y)
+                    );
+                }
                 currentInputSource = ActiveInputSource.Keyboard;
             }
             
@@ -101,15 +164,31 @@ namespace Maze_Crawler
             // Movement
             if (currKeyboarState.IsKeyDown(Keys.A))
             {
-                playerPosition.X += (float)(Math.Cos(playerRotation)) * playerSpeed;
-                playerPosition.Y += (float)(Math.Sin(playerRotation)) * playerSpeed;
+                if (playerMouseAimMode == true)
+                {
+                    playerPosition.X += (float)(Math.Cos(playerRotation)) * playerSpeed / 2;
+                    playerPosition.Y += (float)(Math.Sin(playerRotation)) * playerSpeed / 2;
+                }
+                else
+                {
+                    playerRotation -= (float)Math.PI / 60;
+                }
+    
                 currentInputSource = ActiveInputSource.Keyboard;
 
             }
             else if (currKeyboarState.IsKeyDown(Keys.D))
             {
-                playerPosition.X -= (float)(Math.Cos(playerRotation)) * playerSpeed;
-                playerPosition.Y -= (float)(Math.Sin(playerRotation)) * playerSpeed;
+                if (playerMouseAimMode == true)
+                {
+                    playerPosition.X -= (float)(Math.Cos(playerRotation)) * playerSpeed / 2;
+                    playerPosition.Y -= (float)(Math.Sin(playerRotation)) * playerSpeed / 2;
+                }
+                else
+                {
+                    playerRotation += (float)Math.PI / 60;
+                }
+
                 currentInputSource = ActiveInputSource.Keyboard;
             }
 

@@ -32,6 +32,12 @@ You, the unlucky prisoner, will have to evade monstrosities lurking within the m
 
 
 # Commit Diary (Descending Order)
+## b4
+- Increase player speed from 1 to 3
+- Add Aim Mode for mouse. By pressing a right mouse button (RBM), the movement will be centred around the cursor. Releasing RBM will return tank control to the player.
+- Add Aim Mode for gamepad. By tilting Right Thumb Stick (RTS), the player will look in a respect to RTS direction while Left Thumb Stick (LTS) is used for moving.
+- Apply speed reduction when moving sideways and backward.
+
 ## b3
 - Add gamepad control for player
 - Add mouse look for player
